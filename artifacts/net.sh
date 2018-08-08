@@ -2,6 +2,7 @@
 
 # default image tag
 IMAGETAG="1.2.0"
+export COMPOSE_PROJECT_NAME=artifacts
 export IMAGE_TAG=$IMAGETAG
 COMPOSE_FILE=docker-compose-e2e.yaml
 
@@ -39,7 +40,7 @@ function networkDown() {
 }
 
 MODE=$1
-cd artifacts
+# cd artifacts
 # Determine whether starting, stopping, restarting or generating for announce
 if [ "$MODE" == "up" ]; then
 	networkUp
