@@ -70,11 +70,11 @@ var queryChaincodeInfo = function (channelName, peer, chaincodeName, org) {
 
 		logger.info(' queryBlock with admin from peer [%s]::%j', peer, results);
 		// return client.queryInstalledChaincodesSpec(peer, true);
-		return channel.queryInstantiatedChaincodeSpecs(peer, true);
+	// 	return channel.queryInstantiatedChaincodeSpecs(peer, true);
 
-	}).then( result => {
+	// }).then( result => {
 		
-		logger.info(' queryInstantiatedChaincodeSpecs with admin from peer [%s] ::%j', peer, result);
+	// 	logger.info(' queryInstantiatedChaincodeSpecs with admin from peer [%s] ::%j', peer, result);
 
 	// 	tx_id = client.newTransactionID(true);
 	// 	// If the targets parameter is excluded from the request parameter list 
