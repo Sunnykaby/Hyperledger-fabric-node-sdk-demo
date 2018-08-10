@@ -58,3 +58,15 @@ Also related to identities, you should make a decision on whether Fabric-CA shou
 * create/update channel
 * install/instantiate chaincode
 * query installed/instantiated chaincodes
+
+
+### Grpc bugs
+
+If you found some bugs of `ALPN` about grpc.
+
+you can do these as follow:
+
+* update ./node_modules/grpc/deps/grpc/src/core/lib/security/security_connector/security_connector.cc
+* change line “if (p == nullptr)” to “if (false)”
+* change line “if (!grpc_chttp2_is_alpn_version_supported(p->value.data, p->value.length))” to “if (p != NULL && !grpc_chttp2_is_alpn_version_supported(p->value.data, p->value.length))”
+* npm rebuild --unsafe-perm --build-from-source
