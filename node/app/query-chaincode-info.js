@@ -69,6 +69,7 @@ var queryChaincodeInfo = function (channelName, peer, chaincodeName, org) {
 	}).then((results) => {
 
 		logger.info(' queryBlock with admin from peer [%s]::%j', peer, results);
+		// To Test a case, get the raw chaincode source code from the peer's db. Detail see the file in extra dir
 		// return client.queryInstalledChaincodesSpec(peer, true);
 	// 	return channel.queryInstantiatedChaincodeSpecs(peer, true);
 
