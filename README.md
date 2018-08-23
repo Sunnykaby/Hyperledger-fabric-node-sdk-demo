@@ -1,145 +1,161 @@
-## 使用 1.0 版本
 
-Hyperledger Fabric 1.0 版本整体 [重新设计了架构](https://github.com/hyperledger/fabric/blob/master/proposals/r1/Next-Consensus-Architecture-Proposal.md)，新的设计可以实现更好的扩展性和安全性。
+## 使用 Hyperledger Fabric SDK Node 进行测试
 
-### 下载 Compose 模板文件
+[Hyperledger Fabric Client SDK](https://github.com/hyperledger/fabric-sdk-node) 能够非常简单的使用API和 Hyperledger Fabric Blockchain 网络进行交互。其`v1.1`及其以上的版本添加了一个重要的功能[Conection-Profile](https://fabric-sdk-node.github.io/tutorial-network-config.html)来保存整个network中必要的配置信息，方便client读取和配置。
+该Demo基于`Connection-Profile`测试了整个网络的如下功能：
+* Fabric CA 相关
+  * Enroll用户
+  * Register用户
+* Channel 相关
+  * 创建Channel
+  * 将指定Peer join Channel
+  * 查询Channel相关信息
+  * 动态更新Channel配置信息
+* Chaincode 相关
+  * Install Chaincode
+  * Instantiate Chaincode
+  * Invoke Chaincode
+  * Query Chaincode
+  * 查询Chaincode相关信息
+
+### 主要依赖
+
+* Node v8.9.0 或更高 （注意目前v9.0+还不支持）
+* npm v5.5.1 或更高
+* gulp命令。 必须要进行全局安装 `npm install -g gulp`
+* docker运行环境
+* docker compose工具
+
+主要fabric环境可参考[Fabric 1.0](https://github.com/yeasy/blockchain_guide/blob/master/fabric/1.0.md)。
+
+### 下载 Demo 工程
 
 ```sh
-$ git clone https://github.com/yeasy/docker-compose-files
+$ git clone https://github.com/Sunnykaby/Hyperledger-fabric-node-sdk-demo
 ```
 
-进入 `hyperledger/1.0` 目录，查看包括若干模板文件，功能如下。
 
-文件 | 功能 
+进入 `Hyperledger-fabric-node-sdk-demo` 目录，查各文件夹和文件，功能如下。
+
+文件/文件夹 | 功能 
 -- | --
-orderer-base.yaml | orderer 节点的基础服务模板
-peer-base.yaml | peer 节点的基础服务模板
-docker-compose-base.yaml | 包含 orderer 和 peers 组织结构的基础服务模板
-docker-compose-1peer.yaml | 使用自定义的 `channel` 启动一个最小化的环境，包括 1 个 peer 节点、1 个 orderer 节点、1 个 CA 节点、1 个 cli 节点
-docker-compose-2orgs-4peers.yaml | 使用自定义的 `channel` 启动一个环境，包括 4 个 peer 节点、1 个 orderer 节点、1 个 CA 节点、1 个 cli 节点
-docker-compose-2orgs-4peers-couchdb.yaml | 启动一个带有 couchdb 服务的网络环境
-docker-compose-2orgs-4peers-event.yaml | 启动一个带有 event 事件服务的网络环境
-e2e_cli/channel-artifacts | 存放创建 orderer, channel, anchor peer 操作时的配置文件
-e2e_cli/crypto-config | 存放 orderer 和 peer 相关证书
-e2e_cli/example | 用来测试的 chaincode
-scripts/setup_Docker.sh | 安装并配置 dokcer 和 docker-compose
-scripts/download_images.sh | 下载依赖镜像
-scripts/start_fabric.sh | 快速启动一个fabric 网络
-scripts/initialize.sh | 自动化测试脚本，用来初始化 `channel` 和 `chaincode`
-scripts/test_4peers.sh | 自动化测试脚本，用来执行 chaincode 操作
-scripts/cleanup_env.sh | 容器，镜像自动清除脚本
-scripts/test_1peer.sh | 测试1个peer网络的自动化脚本
-kafka/ |基于kafka 的 ordering 服务
+artifacts-local | 本地准备好构建fabric网络的基础材料
+artifacts-remote | 使用官方fabric-sample动态构建网络
+extra | 一些拓展性的材料
+node |  基于Fabric SDK Node的demo核心代码 
+src | 测试用chaincode
+Init.sh | 构建Demo的初始化脚本
 
-### 安装 Docker 和 docker-compose 
+### 构建Demo
 
-docker 及 docker-compose 可以自行手动安装。也可以通过 hyperledger/1.0/scripts 提供的 `setup_Docker.sh` 脚本自动安装。
+该项目提供两种Demo构建方式：
+* 利用本地已经准备好的相关网络资源，启动fabric network。
+* 利用官方fabric-sample项目，动态启动fabric network。
 
-```bash
-$ bash scripts/setup_Docker.sh
-```
-
-### 获取 Docker 镜像
-
-Docker 镜像可以自行从源码编译（`make docker`），或从 DockerHub 仓库下载。
-
-#### 执行脚本获取
-直接执行 hyperledger/1.0/scripts 提供的 `download_images.sh` 脚本获取。
-
-```bash
-$ bash scripts/download_images.sh
-```
-
-#### 从官方仓库获取
-从社区 DockerHub 仓库下载。
-
-```bash
-# pull fabric images
-ARCH=x86_64
-BASEIMAGE_RELEASE=0.3.1
-BASE_VERSION=1.0.0
-PROJECT_VERSION=1.0.0
-IMG_TAG=1.0.0
-
-echo "Downloading fabric images from DockerHub...with tag = ${IMG_TAG}... need a while"
-# TODO: we may need some checking on pulling result?
-docker pull hyperledger/fabric-peer:$ARCH-$IMG_TAG
-docker pull hyperledger/fabric-orderer:$ARCH-$IMG_TAG
-docker pull hyperledger/fabric-ca:$ARCH-$IMG_TAG
-docker pull hyperledger/fabric-tools:$ARCH-$IMG_TAG
-docker pull hyperledger/fabric-ccenv:$ARCH-$PROJECT_VERSION
-docker pull hyperledger/fabric-baseimage:$ARCH-$BASEIMAGE_RELEASE
-docker pull hyperledger/fabric-baseos:$ARCH-$BASEIMAGE_RELEASE
-
-# Only useful for debugging
-# docker pull yeasy/hyperledger-fabric
-
-echo "===Re-tagging images to *latest* tag"
-docker tag hyperledger/fabric-peer:$ARCH-$IMG_TAG hyperledger/fabric-peer
-docker tag hyperledger/fabric-orderer:$ARCH-$IMG_TAG hyperledger/fabric-orderer
-docker tag hyperledger/fabric-ca:$ARCH-$IMG_TAG hyperledger/fabric-ca
-docker tag hyperledger/fabric-tools:$ARCH-$IMG_TAG hyperledger/fabric-tools
-```
-#### 从第三方仓库获取
-这里也提供了调整（基于 golang:1.8 基础镜像制作）后的第三方镜像，与社区版本功能是一致的。
-
-通过如下命令拉取相关镜像，并更新镜像别名。
-
-```bash
-$ ARCH=x86_64
-$ BASEIMAGE_RELEASE=0.3.1
-$ BASE_VERSION=1.0.0
-$ PROJECT_VERSION=1.0.0
-$ IMG_TAG=1.0.0
-$ docker pull yeasy/hyperledger-fabric-base:$IMG_VERSION \
-  && docker pull yeasy/hyperledger-fabric-peer:$IMG_VERSION \
-  && docker pull yeasy/hyperledger-fabric-orderer:$IMG_VERSION \
-  && docker pull yeasy/hyperledger-fabric-ca:$IMG_VERSION \
-  && docker pull hyperledger/fabric-couchdb:$ARCH-$IMG_VERSION \
-  && docker pull hyperledger/fabric-kafka:$ARCH-$IMG_VERSION \
-  && docker pull hyperledger/fabric-zookeeper:$ARCH-$IMG_VERSION
-  
-$ docker tag yeasy/hyperledger-fabric-peer:$IMG_VERSION hyperledger/fabric-peer \
-  && docker tag yeasy/hyperledger-fabric-orderer:$IMG_VERSION hyperledger/fabric-orderer \
-  && docker tag yeasy/hyperledger-fabric-ca:$IMG_VERSION hyperledger/fabric-ca \
-  && docker tag yeasy/hyperledger-fabric-peer:$IMG_VERSION hyperledger/fabric-tools \
-  && docker tag yeasy/hyperledger-fabric-base:$IMG_VERSION hyperledger/fabric-ccenv:$ARCH-$PROJECT_VERSION \
-  && docker tag yeasy/hyperledger-fabric-base:$IMG_VERSION hyperledger/fabric-baseos:$ARCH-$BASEIMAGE_RELEASE \
-  && docker tag yeasy/hyperledger-fabric-base:$IMG_VERSION hyperledger/fabric-baseimage:$ARCH-$BASEIMAGE_RELEASE \
-  && docker tag hyperledger/fabric-couchdb:$ARCH-$IMG_VERSION hyperledger/fabric-couchdb \
-  && docker tag hyperledger/fabric-zookeeper:$ARCH-$IMG_VERSION hyperledger/fabric-zookeeper \
-  && docker tag hyperledger/fabric-kafka:$ARCH-$IMG_VERSION hyperledger/fabric-kafka
-```
-
-### 启动 fabric 1.0 网络
-
-通过如下命令快速启动。
+当然，你也可以使用自己已经创建好的fabric network和其相关的connection-profile来测试Demo。
 
 ```sh
-$ bash scripts/start_fabric.sh
+##进入项目根目录
+
+##使用本地资源构建Demo
+./Init.sh local
+
+##使用官方资源构建Demo
+./Init.sh remote
 ```
 
-或者
+执行之后，会在根目录中生成一个`demo`文件夹，其就是Demo程序的入口。
 
-```bash
-$ docker-compose -f docker-compose-2orgs-4peers.yaml up
+清理Demo资源，使用`./Init.sh clean`
+
+### 启动Fabric网络
+
+首先，我们需要准备一个fabric网络来进行测试。
+进入到`demo`文件夹。
+
+#### 本地资源构建网络
+
+进入资源目录，利用脚本启动网络即可。
+```sh
+cd artifacts
+##启动网络
+./net.sh up
+##关闭网络
+./net down
+```
+用该脚本启动网络中包含：1个orderer， 2个organisation， 4个peer（每个组织有2个peer）和两个ca（每个组织一个）。
+
+#### 官方资源构建网络
+
+在demo目录，利用脚本启动网络即可。
+```sh
+##启动网络,并配置本地资源
+./net.sh init
+##关闭网络并清理资源
+./net.sh clean
+```
+用该脚本启动网络中包含：1个orderer， 2个organisation， 4个peer（每个组织有2个peer）和两个ca（每个组织一个）。
+
+与本地资源启动不同，该方案主要有以下步骤：
+* 从官方[fabric-sample项目](https://github.com/hyperledger/fabric-samples)中clone到本地
+* 利用`fabric-sample/first-network/bynf.sh up`启动fabric脚本
+* 将一些资源文件连接到指定位置，方便node程序使用
+* 通过资源文件构建connection-profile（替换密钥等）
+* 创建一个新的channel的binary
+
+详细信息可以直接查看`net.sh`脚本。
+
+>`clean`命令会将所有相关的docker 容器和remote的动态资源全部删除。还原到最初的demo文件状态。
+
+#### 资源清单
+
+无论是remote还是local模式，最终资源和网络准备完成之后，核心资源列表如下：
+```
+demo/artifacts/  
+├── channel-artifacts                
+│   ├── channel2.tx    
+│   ├── channel.tx  
+│   ├── genesis.block  
+│   ├── Org1MSPanchors.tx  
+│   └── Org2MSPanchors.tx  
+├── connection-profile              
+│   ├── network.yaml  
+│   ├── org1.yaml  
+│   ├── org2.yaml  
+├── crypto-config  
+│   ├── ordererOrganizations  
+│   │   └── example.com  
+│   └── peerOrganizations  
+│       ├── org1.example.com  
+│       └── org2.example.com  
 ```
 
-注意输出日志中无错误信息。
+### 运行Demo
 
-此时，系统中包括 7 个容器。
-
-```bash
-$ docker ps -a
-CONTAINER ID        IMAGE                        COMMAND                  CREATED             STATUS              PORTS                                                                                 NAMES
-8683435422ca        hyperledger/fabric-peer      "bash -c 'while true;"   19 seconds ago      Up 18 seconds       7050-7059/tcp                                                                         fabric-cli
-f284c4dd26a0        hyperledger/fabric-peer      "peer node start --pe"   22 seconds ago      Up 19 seconds       7050/tcp, 0.0.0.0:7051->7051/tcp, 7052/tcp, 7054-7059/tcp, 0.0.0.0:7053->7053/tcp     peer0.org1.example.com
-95fa3614f82c        hyperledger/fabric-ca        "fabric-ca-server sta"   22 seconds ago      Up 19 seconds       0.0.0.0:7054->7054/tcp                                                                fabric-ca
-833ca0d8cf41        hyperledger/fabric-orderer   "orderer"                22 seconds ago      Up 19 seconds       0.0.0.0:7050->7050/tcp                                                                orderer.example.com
-cd21cfff8298        hyperledger/fabric-peer      "peer node start --pe"   22 seconds ago      Up 20 seconds       7050/tcp, 7052/tcp, 7054-7059/tcp, 0.0.0.0:9051->7051/tcp, 0.0.0.0:9053->7053/tcp     peer0.org2.example.com
-372b583b3059        hyperledger/fabric-peer      "peer node start --pe"   22 seconds ago      Up 20 seconds       7050/tcp, 7052/tcp, 7054-7059/tcp, 0.0.0.0:10051->7051/tcp, 0.0.0.0:10053->7053/tcp   peer1.org2.example.com
-47ce30077276        hyperledger/fabric-peer      "peer node start --pe"   22 seconds ago      Up 20 seconds       7050/tcp, 7052/tcp, 7054-7059/tcp, 0.0.0.0:8051->7051/tcp, 0.0.0.0:8053->7053/tcp     peer1.org1.example.com
+网络和相关资源准备成功之后，进入`demo/node`目录。
+其主要结构为：
 ```
+├── app                             //核心应用接口
+│   ├── api-handler.js              //接口定义文件
+│   ├── *.js                        //应用实现模块
+│   ├── tools                       //通用工具类
+│   │   ├── ca-tools.js
+│   │   ├── config-tool.js
+│   │   └── helper.js
+├── app-test.js                     //Demo程序启动文件
+├── package.json
+└── readme.md
+```
+
+使用命令`node app-test.js`即可进行一个完整workflow的测试，包括最开始我们提到的所有功能。
+同时可以使用`node app-test.js -m ca|createChannel|joinChannel|install|instantiate|invoke|query|queryChaincodeInfo|queryChannelInfo`来运行单个功能。
+
+程序使用的均为默认参数，其定义在`app-test.js`文件中。可以按照需求修改对应的参数，在运行程序即可。
+
+### 持续更新
+
+如果在使用途中发现任何问题，或者有任何需求可以在该项目的issue中提出改进方案或者建议。
+Github地址：[Hyperledger-fabric-node-sdk-demo](https://github.com/Sunnykaby/Hyperledger-fabric-node-sdk-demo)
 
 ### 测试网络
 
