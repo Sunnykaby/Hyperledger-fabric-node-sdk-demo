@@ -35,7 +35,7 @@ $ git clone https://github.com/Sunnykaby/Hyperledger-fabric-node-sdk-demo
 ```
 
 
-进入 `Hyperledger-fabric-node-sdk-demo` 目录，查各文件夹和文件，功能如下。
+进入 `Hyperledger-fabric-node-sdk-demo` 目录，查看各文件夹和文件，功能如下。
 
 文件/文件夹 | 功能 
 -- | --
@@ -81,7 +81,7 @@ cd artifacts
 ##启动网络
 ./net.sh up
 ##关闭网络
-./net down
+./net.sh down
 ```
 用该脚本启动网络中包含：1个orderer， 2个organisation， 4个peer（每个组织有2个peer）和两个ca（每个组织一个）。
 
@@ -97,7 +97,7 @@ cd artifacts
 用该脚本启动网络中包含：1个orderer， 2个organisation， 4个peer（每个组织有2个peer）和两个ca（每个组织一个）。
 
 与本地资源启动不同，该方案主要有以下步骤：
-* 从官方[fabric-sample项目](https://github.com/hyperledger/fabric-samples)中clone到本地
+* 将官方[fabric-sample项目](https://github.com/hyperledger/fabric-samples)clone到本地
 * 利用`fabric-sample/first-network/bynf.sh up`启动fabric脚本
 * 将一些资源文件连接到指定位置，方便node程序使用
 * 通过资源文件构建connection-profile（替换密钥等）
@@ -150,7 +150,7 @@ demo/artifacts/
 使用命令`node app-test.js`即可进行一个完整workflow的测试，包括最开始我们提到的所有功能。
 同时可以使用`node app-test.js -m ca|createChannel|joinChannel|install|instantiate|invoke|query|queryChaincodeInfo|queryChannelInfo`来运行单个功能。
 
-程序使用的均为默认参数，其定义在`app-test.js`文件中。可以按照需求修改对应的参数，在运行程序即可。
+程序使用的均为默认参数，其定义在`app-test.js`文件中。可以按照需求修改对应的参数，再运行程序即可。
 
 ### 持续更新
 
