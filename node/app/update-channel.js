@@ -1,78 +1,93 @@
 'use strict';
 var util = require('util');
 var helper = require('./tools/helper.js');
-var logger = helper.getLogger('join-channel');
+var logger = helper.getLogger('update-channel');
+var Configtxlator = require('./tools/fabric-tools/configtxlator');
+var FabricConfigBuilder = require('./tools/fabric-config-builder');
+var MSP = require('./tools/msp-tool')
+//Instantiate the configlator
+var configtx = new Configtxlator();
 
 
-var joinChannel = function (channelName, peers,
-	isAddToFile) {
-	logger.info('\n\n============ Join Peers to Channel ============\n');
+var updateChannel = function (channelName, udpateOpt) {
+	logger.info('\n\n============ Update config to Channel ============\n');
 
 	var client = null;
 	var channel = null;
 	var tx_id = null;
+	var originalConfigEnvelopeBlock = null;
+	var originalConfigEnvelopeObj = null;
+	var updatedConfigEnvelopeBlock = null;
+	var updatedConfigEnvelopeObj = null;
+	var signatures = [];
+
 
 	return helper.getClient().then(_client => {
 		client = _client;
 		// have the clients build a channel with all peers and orderers
 		channel = client.getChannel(channelName);
 
-		// get an admin based transaction
-		tx_id = client.newTransactionID(true);
-		let request = {
-			txId: tx_id
-		};
+		return channel.getChannelConfig();//Get channel config from orderer?
+	}).then((configEnvelope) => {
+		originalConfigEnvelopeBlock = configEnvelope;
+		//Get the readable json format data for config info
+		return configtx.decode(configEnvelope, 'common.Config');
+	}).then(configEnvelopeJson => {
+		//Add a new org, you should prepare a related msp for the target org first
+		//Build a new organisation group for application group section
+		var orgName = udpateOpt.orgName;
+		var mspId = udpateOpt.mspId;
+		var mspObj = new MSP(mspId);
+		mspObj.load(udpateOpt.mspDir);
 
-		return channel.getGenesisBlock(request); //admin from current org
-	}).then((block) => {
-		let genesis_block = block;
+		var builder = new FabricConfigBuilder();
+		builder.addOrganization(orgName, mspId, mspObj.getMSP());
+
+		var orgAppGroup = builder.buildApplicationGroup(false);
+
+		//Modify the target config json with a new org group
+		updatedConfigEnvelopeObj = originalConfigEnvelopeObj;
+		updatedConfigEnvelopeObj.channel_group.groups.Application.groups[orgName] = orgAppGroup;
+
+		//change the updated obj to json for encode
+		var updatedConfigEnvelopeJson = JSON.stringify(updatedConfigEnvelopeObj);
+		return configtx.encode(updatedConfigEnvelopeJson, 'commom.Config');
+	}).then(updatedConfigEnvelopeBlock => {
+		this.updatedConfigEnvelopeBlock = updatedConfigEnvelopeBlock;
+
+		//Then we should sign the envelope for updating the channel config
+		var signature = client.signChannelConfig(updatedConfigEnvelopeBlock);
+		signatures.push(signature);
+
+		//The signatures list should be satisfied with the channel config modify policy
+
 
 		let tx_id = client.newTransactionID(true);
 		let request = {
-			//targets: // this time we will leave blank so that we can use
-			// all the peers assigned to the channel ...some may fail
-			// if the submitter is not allowed, let's see what we get
-			// targets: ['peer0.org1.example.com'],
-			block: genesis_block,
+			config: updatedConfigEnvelopeBlock,
+			signatures: signatures,
+			name: channelName,
 			txId: tx_id
 		};
 
-		return channel.joinChannel(request); //admin from current org
+		return client.updateChannel(request); //admin from current org
 	}).then((results) => {
-		var proposalResponses = results;
-		var all_good = true;
-		var isExist = 0;
-		var errors = [];
-		for (var i in proposalResponses) {
-			let one_good = false;
-			if (proposalResponses && proposalResponses[i].response && proposalResponses[i].response.status === 200) {
-				one_good = true;
-				logger.info('join channel proposal was good');
-			} else {
-				logger.error(proposalResponses[i])
-				if(proposalResponses[i].details.indexOf("exists") != -1){
-					logger.error('This channel exists in the peer');
-					isExist++;
-				}
-				logger.error('join channel proposal was bad');
-				errors.push(proposalResponses[i]);
-			}
-			all_good = all_good & one_good;
-		}
-		if(isExist == proposalResponses.length) return {status: "Peers have aready joined into the channel"};
-		if (all_good) {
-			logger.info(util.format('Successfully join channel and received ProposalResponse: Status - %s', proposalResponses[0].response.status));
-			return { status: "Join channel successfully", tx_id: tx_id.getTransactionID(true) };
+		logger.info('\n***\n completed the update \n***\n');
+
+		logger.debug(' response ::%j', results);
+		if (results.status && results.status === 'SUCCESS') {
+			logger.info(util.format('Successfully update channel and received response: Status - %s', results.status));
+			return { status: "Update channel successfully"};
 		} else {
-			throw new Error(util.format('Failed to join channel or receive valid response: %s', errors));
+			throw new Error(util.format('Failed to update channel or receive valid response: %s', results.status));
 		}
 	}, (err) => {
-		logger.error('Failed to join channel due to error: ' + err.stack ? err.stack : err);
-		throw new Error('Failed to join channel due to error: ' + err.stack ? err.stack : err);
+		logger.error('Failed to update channel due to error: ' + err.stack ? err.stack : err);
+		throw new Error('Failed to update channel due to error: ' + err.stack ? err.stack : err);
 	}).catch(err => {
-		logger.error('Failed to join channel due to error: ' + err.stack ? err.stack : err);
-		throw new Error('Failed to join channel due to error: ' + err.stack ? err.stack : err);
+		logger.error('Failed to update channel due to error: ' + err.stack ? err.stack : err);
+		throw new Error('Failed to update channel due to error: ' + err.stack ? err.stack : err);
 	});
 };
 
-exports.joinChannel = joinChannel;
+exports.updateChannel = updateChannel;

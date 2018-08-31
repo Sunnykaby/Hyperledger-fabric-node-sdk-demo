@@ -6,7 +6,6 @@ var base_config_path = "../artifacts/connection-profile/"
 
 var ConfigTool = class {
 
-
     constructor() {
         this._client = null;
         this._org = null;

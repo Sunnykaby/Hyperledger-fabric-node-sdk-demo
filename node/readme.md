@@ -45,7 +45,7 @@ If you don't want to use a user context with CA. And you can use a default admin
 
 
 ### Code Style
-Follow a guide [node-style-guide](https://github.com/dead-horse/node-style-gui)
+Follow a guide [node-style-guide](https://github.com/norfish/yueliao/wiki/NodeJS%E7%BC%96%E7%A0%81%E8%A7%84%E8%8C%83)
 
 ### Reference
 
@@ -70,3 +70,15 @@ you can do these as follow:
 * change line “if (p == nullptr)” to “if (false)”
 * change line “if (!grpc_chttp2_is_alpn_version_supported(p->value.data, p->value.length))” to “if (p != NULL && !grpc_chttp2_is_alpn_version_supported(p->value.data, p->value.length))”
 * npm rebuild --unsafe-perm --build-from-source
+
+
+### Connection errors
+
+#### 14 UNAVAILABLE: EOF
+
+if you see some error like `Error: Error: 14 UNAVAILABLE: EOF`, you can set these two env for your terminal:
+```
+export GRPC_TRACE=all
+export GRPC_VERBOSITY=DEBUG
+```
+It will show more detail Information for you to debug the connection error of `grpc` module.
