@@ -100,6 +100,17 @@ var enrollReq = {
     org: ORG
 }
 
+var updateRequest = {
+    chanName: CHANNEL_NAME,
+    org: ORG,
+    uptOpt: {
+        orgName: "Org3MSP",
+        mspId: "Org3MSP",
+        target: PEER,
+        mspDir: "../net/org3-artifacts/crypto-config/peerOrganizations/org3.example.com/msp"
+    }
+}
+
 function testWorkFlow() {
     try {
         //Do nothing
@@ -133,7 +144,6 @@ function testWorkFlow() {
             return api.queryChaincodeInfo(queryChaincodeInfoRequest);
         }).then(result => {
             console.log(result);
-
             // invoke chaincode with target peers
             // With admin user
             return api.invokeChaincode(invokeChaincodeRequest);
@@ -149,6 +159,10 @@ function testWorkFlow() {
             return api.queryChannel(queryChannelRequest);
         }).then(result => {
             console.log(result);
+            // update channel as update options
+        //     return api.updateChannel(updateRequest);
+        // }).then( result => {
+        //     console.log(result);
             // Set the usercontext to member
             return helper.setMember(ORG, MEMBER_NAME, ENROOL_ID, ENROLL_SECRET);
         }).then(member => {
@@ -340,6 +354,24 @@ switch (program.method) {
             helper.initNetworkConfig().then(result => {
                 //Query the target channel info 
                 return api.queryChannel(queryChannelRequest);
+            }).then(result => {
+                console.log(result);
+                process.exit();
+            }).catch(err => {
+                console.error(err);
+                return;
+            });
+        } catch (e) {
+            console.log(e);
+            return;
+        }
+        break;
+    case "updateChannel":
+        try {
+            //Do nothing
+            helper.initNetworkConfig().then(result => {
+                //Update the target channel info 
+                return api.updateChannel(updateRequest);
             }).then(result => {
                 console.log(result);
                 process.exit();

@@ -9,36 +9,37 @@ var MSP = require('./tools/msp-tool')
 var configtx = new Configtxlator();
 
 
-var updateChannel = function (channelName, udpateOpt) {
+var updateChannel = function (channelName, org, updateOpt) {
 	logger.info('\n\n============ Update config to Channel ============\n');
 
 	var client = null;
 	var channel = null;
 	var tx_id = null;
-	var originalConfigEnvelopeBlock = null;
-	var originalConfigEnvelopeObj = null;
-	var updatedConfigEnvelopeBlock = null;
-	var updatedConfigEnvelopeObj = null;
+	var originalConfigBlock = null;
+	var originalConfigObj = null;
+	var updatedConfigBlock = null;
+	var updatedConfigObj = null;
 	var signatures = [];
 
 
-	return helper.getClient().then(_client => {
+	return helper.getClient(org).then(_client => {
 		client = _client;
 		// have the clients build a channel with all peers and orderers
 		channel = client.getChannel(channelName);
 
-		return channel.getChannelConfig();//Get channel config from orderer?
+		return channel.getChannelConfig(updateOpt.target);//Get channel config from orderer?
 	}).then((configEnvelope) => {
-		originalConfigEnvelopeBlock = configEnvelope;
+		originalConfigBlock = configEnvelope.config.toBuffer();
 		//Get the readable json format data for config info
-		return configtx.decode(configEnvelope, 'common.Config');
+		return configtx.decode(originalConfigBlock, 'common.Config');
 	}).then(configEnvelopeJson => {
+		originalConfigObj = JSON.parse(configEnvelopeJson);
 		//Add a new org, you should prepare a related msp for the target org first
 		//Build a new organisation group for application group section
-		var orgName = udpateOpt.orgName;
-		var mspId = udpateOpt.mspId;
+		var orgName = updateOpt.orgName;
+		var mspId = updateOpt.mspId;
 		var mspObj = new MSP(mspId);
-		mspObj.load(udpateOpt.mspDir);
+		mspObj.load(updateOpt.mspDir);
 
 		var builder = new FabricConfigBuilder();
 		builder.addOrganization(orgName, mspId, mspObj.getMSP());
@@ -46,25 +47,30 @@ var updateChannel = function (channelName, udpateOpt) {
 		var orgAppGroup = builder.buildApplicationGroup(false);
 
 		//Modify the target config json with a new org group
-		updatedConfigEnvelopeObj = originalConfigEnvelopeObj;
-		updatedConfigEnvelopeObj.channel_group.groups.Application.groups[orgName] = orgAppGroup;
+		updatedConfigObj = originalConfigObj;
+		updatedConfigObj.channel_group.groups.Application.groups[orgName] = orgAppGroup;
 
 		//change the updated obj to json for encode
-		var updatedConfigEnvelopeJson = JSON.stringify(updatedConfigEnvelopeObj);
-		return configtx.encode(updatedConfigEnvelopeJson, 'commom.Config');
+		var updatedConfigEnvelopeJson = JSON.stringify(updatedConfigObj);
+		// Log the file
+		helper.writeFile("updateConfigJson.json", updatedConfigEnvelopeJson);
+		return configtx.encode(updatedConfigEnvelopeJson, 'common.Config');
 	}).then(updatedConfigEnvelopeBlock => {
-		this.updatedConfigEnvelopeBlock = updatedConfigEnvelopeBlock;
+		updatedConfigBlock = updatedConfigEnvelopeBlock;
+		// Compute the diff by configtxlator
+		return configtx.compute_delta(originalConfigBlock, updatedConfigBlock, channelName);
+	}).then(config_pb => {
 
 		//Then we should sign the envelope for updating the channel config
-		var signature = client.signChannelConfig(updatedConfigEnvelopeBlock);
+		var signature = client.signChannelConfig(config_pb);
 		signatures.push(signature);
 
 		//The signatures list should be satisfied with the channel config modify policy
 
 
-		let tx_id = client.newTransactionID(true);
+		tx_id = client.newTransactionID(true);
 		let request = {
-			config: updatedConfigEnvelopeBlock,
+			config: config_pb,
 			signatures: signatures,
 			name: channelName,
 			txId: tx_id
@@ -77,7 +83,7 @@ var updateChannel = function (channelName, udpateOpt) {
 		logger.debug(' response ::%j', results);
 		if (results.status && results.status === 'SUCCESS') {
 			logger.info(util.format('Successfully update channel and received response: Status - %s', results.status));
-			return { status: "Update channel successfully"};
+			return { status: "Update channel successfully" };
 		} else {
 			throw new Error(util.format('Failed to update channel or receive valid response: %s', results.status));
 		}

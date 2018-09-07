@@ -82,3 +82,43 @@ export GRPC_TRACE=all
 export GRPC_VERBOSITY=DEBUG
 ```
 It will show more detail Information for you to debug the connection error of `grpc` module.
+
+
+### TODO
+
+* Make up related object manually
+    * Peer: tlsOptions, hostname
+    * Orderer: tlsOptions, hostname
+* Enhance the config data analysis 
+    * Get related info from connection profile
+* Multi organization support
+    * Change the organization
+* Create channel without preparation
+    * Create channeltx by nodejs
+* Modify Connection profile
+    * After create Channel, update the connection profile
+    * After add org, update the connection profile
+
+
+### A new org
+
+All the main steps are shown in the `./net/eyfn.sh`. 
+
+* Using the remote mode, setup the network
+
+* Generate the new organation's crypto materials
+
+```
+cd net/org3-artifacts
+cryptogen generate --config=./org3-crypto.yaml
+```
+Then, it will create `crypto-config` for org3.
+
+* Setup the org3's container
+
+```
+IMAGE_TAG=1.2.0 docker-compose -f docker-compose-org3.yaml up -d
+```
+
+* Run the update-channel test to add a target org
+

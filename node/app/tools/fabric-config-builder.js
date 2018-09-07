@@ -52,7 +52,8 @@ var FabricConfigBuilder = class {
                             principal: {
                                 msp_identifier: this.mspid,
                                 role: "MEMBER"
-                            }
+                            },
+                            principal_classification: "ROLE"
                         }
                     ],
                     rule: {
@@ -78,7 +79,8 @@ var FabricConfigBuilder = class {
                             principal: {
                                 msp_identifier: this.mspid,
                                 role: "ADMIN"
-                            }
+                            },
+                            principal_classification: "ROLE"
                         }
                     ],
                     rule: {

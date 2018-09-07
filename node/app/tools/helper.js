@@ -5,6 +5,7 @@ var path = require('path');
 var ConfigTool = require('./config-tool.js');
 var CATools = require('./ca-tools.js')
 var hfc = require('fabric-client');
+var fs = require("fs");
 
 logger.setLevel('INFO');
 hfc.setLogger(logger);
@@ -111,6 +112,10 @@ var getLogger = function (moduleName) {
 	return logger;
 };
 
+var writeFile = function (path, content) {
+	fs.writeFileSync(path, content);
+}
+
 exports.getClient = getClient;
 exports.getLogger = getLogger;
 exports.setupChaincodeDeploy = setupChaincodeDeploy;
@@ -123,3 +128,4 @@ exports.ca = ca;
 exports.setAdmin = setAdmin;
 exports.setMember = setMember;
 exports.addTargetsToRequest = addTargetsToRequest;
+exports.writeFile = writeFile;

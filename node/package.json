@@ -15,6 +15,7 @@
     "commander": "^2.16.0",
     "fabric-ca-client": "1.1.2",
     "fabric-client": "1.1.2",
-    "log4js": "^0.6.38"
+    "log4js": "^0.6.38",
+    "request-promise-native": "1.0.5"
   }
 }
