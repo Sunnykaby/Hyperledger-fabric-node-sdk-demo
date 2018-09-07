@@ -122,3 +122,4 @@ IMAGE_TAG=1.2.0 docker-compose -f docker-compose-org3.yaml up -d
 
 * Run the update-channel test to add a target org
 
+

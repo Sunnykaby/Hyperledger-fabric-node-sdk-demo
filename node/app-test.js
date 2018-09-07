@@ -111,6 +111,18 @@ var updateRequest = {
     }
 }
 
+var getConfigAppReq = {
+    chanName: CHANNEL_NAME,
+    org: ORG,
+    target: PEER
+}
+
+var getConfigSysReq = {
+    chanName: CHANNEL_NAME,
+    org: "ordererOrg",
+    target: PEER
+}
+
 function testWorkFlow() {
     try {
         //Do nothing
@@ -372,6 +384,42 @@ switch (program.method) {
             helper.initNetworkConfig().then(result => {
                 //Update the target channel info 
                 return api.updateChannel(updateRequest);
+            }).then(result => {
+                console.log(result);
+                process.exit();
+            }).catch(err => {
+                console.error(err);
+                return;
+            });
+        } catch (e) {
+            console.log(e);
+            return;
+        }
+        break;
+    case "getAppChannelConfig":
+        try {
+            //Do nothing
+            helper.initNetworkConfig().then(result => {
+                //get the target channel config 
+                return api.getAppChannelConfig(getConfigAppReq);
+            }).then(result => {
+                console.log(result);
+                process.exit();
+            }).catch(err => {
+                console.error(err);
+                return;
+            });
+        } catch (e) {
+            console.log(e);
+            return;
+        }
+        break;
+    case "getSysChannelConfig":
+        try {
+            //Do nothing
+            helper.initNetworkConfig().then(result => {
+                //get the target channel config 
+                return api.getSysChannelConfig(getConfigSysReq);
             }).then(result => {
                 console.log(result);
                 process.exit();

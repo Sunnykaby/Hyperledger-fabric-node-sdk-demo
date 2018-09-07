@@ -6,9 +6,10 @@ var query = require('./query-chaincode');
 var createChannel = require('./create-channel.js');
 var joinChannel = require('./join-channel.js');
 var queryChannel = require('./query-channel.js');
-var queryChaincodeInfo = require('./query-chaincode-info.js')
-var enroll = require('./ca-enroll.js')
-var updateChannel = require('./update-channel')
+var queryChaincodeInfo = require('./query-chaincode-info.js');
+var enroll = require('./ca-enroll.js');
+var updateChannel = require('./update-channel');
+var getConfig = require('./get-channel-config');
 
 module.exports.enroll = function (enrollReq) {
     return enroll.caEnroll(enrollReq.enrollmentId, enrollReq.enrollmentSecret, enrollReq.org);
@@ -22,6 +23,13 @@ module.exports.updateChannel = function (updateReq) {
     return updateChannel.updateChannel(updateReq.chanName, updateReq.org, updateReq.uptOpt);
 }
 
+module.exports.getAppChannelConfig = function (getConfigReq){
+    return getConfig.getChannelConfigApp(getConfigReq.chanName, getConfigReq.org, getConfigReq.target);
+}
+
+module.exports.getSysChannelConfig = function (getConfigReq){
+    return getConfig.getChannelConfigSys(getConfigReq.org);
+}
 
 module.exports.joinChannel = function (joinChReq) {
     return joinChannel.joinChannel(joinChReq.chanName, joinChReq.peers, joinChReq.isAddToFile);

@@ -65,6 +65,12 @@ function replacePrivateKey() {
 	PRIV_KEY=$(ls *_sk)
 	cd "$CURRENT_DIR"
 	sed $OPTS "s/ORG2_PRIVATE_KEY/${PRIV_KEY}/g" artifacts/connection-profile/network.yaml
+	# Change the orderer's private key
+	cd artifacts
+	cd crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp/keystore/
+	PRIV_KEY=$(ls *_sk)
+	cd "$CURRENT_DIR"
+	sed $OPTS "s/ORDERER_PRIVATE_KEY/${PRIV_KEY}/g" artifacts/connection-profile/network.yaml
 	# If MacOSX, remove the temporary backup of the docker-compose file
 	if [ "$ARCH" == "Darwin" ]; then
 		rm network.yamlt

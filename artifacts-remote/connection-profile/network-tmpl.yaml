@@ -123,6 +123,10 @@ channels:
     chaincodes:
       - example02:v1
       - marbles:1.0
+  
+  testchainid:
+    orderers:
+      - orderer.example.com
 
 #
 # list of participating organizations in this network
@@ -172,6 +176,13 @@ organizations:
       path: ../artifacts/crypto-config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/keystore/ORG2_PRIVATE_KEY
     signedCert:
       path: ../artifacts/crypto-config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/signcerts/Admin@org2.example.com-cert.pem
+
+  OrdererOrg:
+    mspid: OrdererMSP
+    adminPrivateKey:
+      path: ../artifacts/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp/keystore/ORDERER_PRIVATE_KEY
+    signedCert:
+      path: ../artifacts/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp/signcerts/Admin@example.com-cert.pem
 
 #
 # List of orderers to send transaction and channel create/update requests to. For the time

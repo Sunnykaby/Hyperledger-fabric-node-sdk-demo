@@ -27,32 +27,6 @@ description: "The network to be in if you want to stay in the global trade busin
 version: "1.0"
 
 #
-# The client section is SDK-specific. The sample below is for the node.js SDK
-#
-client:
-  # Which organization does this application instance belong to? The value must be the name of an org
-  # defined under "organizations"
-  organization: Org1
-
-  # Some SDKs support pluggable KV stores, the properties under "credentialStore"
-  # are implementation specific
-  credentialStore:
-    # [Optional]. Specific to FileKeyValueStore.js or similar implementations in other SDKs. Can be others
-    # if using an alternative impl. For instance, CouchDBKeyValueStore.js would require an object
-    # here for properties like url, db name, etc.
-    path: "/tmp/hfc-kvs"
-
-    # [Optional]. Specific to the CryptoSuite implementation. Software-based implementations like
-    # CryptoSuite_ECDSA_AES.js in node SDK requires a key store. PKCS#11 based implementations does
-    # not.
-    cryptoStore:
-      # Specific to the underlying KeyValueStore that backs the crypto key store.
-      path: "/tmp/hfc-cvs"
-
-    # [Optional]. Specific to Composer environment
-    # wallet: wallet-name
-
-#
 # [Optional]. But most apps would have this section so that channel objects can be constructed
 # based on the content below. If an app is creating channels, then it likely will not need this
 # section.
@@ -124,6 +98,10 @@ channels:
       - example02:v1
       - marbles:1.0
 
+  testchainid:
+    orderers:
+      - orderer.example.com
+
 #
 # list of participating organizations in this network
 #
@@ -172,6 +150,13 @@ organizations:
       path: ../artifacts/crypto-config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/keystore/557d72e0eddaaad52022dace8deeddb76ac79d3be72be5c2c0a6de7894252ec3_sk
     signedCert:
       path: ../artifacts/crypto-config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/signcerts/Admin@org2.example.com-cert.pem
+
+  OrdererOrg:
+    mspid: OrdererMSP
+    adminPrivateKey:
+      path: ../artifacts/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp/keystore/235171e257214e1be610dbc58fa87b4628cc433138f522ba961b28521bc5effa_sk
+    signedCert:
+      path: ../artifacts/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp/signcerts/Admin@example.com-cert.pem
 
 #
 # List of orderers to send transaction and channel create/update requests to. For the time
