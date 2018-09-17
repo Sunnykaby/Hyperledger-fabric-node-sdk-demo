@@ -93,8 +93,6 @@ It will show more detail Information for you to debug the connection error of `g
     * Get related info from connection profile
 * Multi organization support
     * Change the organization
-* Create channel without preparation
-    * Create channeltx by nodejs
 * Modify Connection profile
     * After create Channel, update the connection profile
     * After add org, update the connection profile
