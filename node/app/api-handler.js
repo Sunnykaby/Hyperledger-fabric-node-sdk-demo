@@ -16,7 +16,7 @@ module.exports.enroll = function (enrollReq) {
 }
 
 module.exports.createChannel = function (createChReq) {
-    return createChannel.createChannel(createChReq.chanName, createChReq.org, createChReq.isFromFile);
+    return createChannel.createChannel(createChReq.chanName, createChReq.org, createChReq.createOptions, createChReq.isFromFile);
 }
 
 module.exports.updateAppChannel = function (updateReq) {

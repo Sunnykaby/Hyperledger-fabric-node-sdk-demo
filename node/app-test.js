@@ -2,6 +2,7 @@ var helper = require("./app/tools/helper.js");
 var api = require("./app/api-handler.js");
 var program = require('commander');
 var logger = helper.getLogger();
+var path = require('path');
 
 program
     .version('0.1 Beta')
@@ -10,6 +11,8 @@ program
 
 program.parse(process.argv)
 
+var WORKDIR=process.env.PWD;
+var artifact_path = path.join(WORKDIR, "..","artifacts");
 
 
 // Param declaration
@@ -23,6 +26,7 @@ var ORG = "org1"
 var ENROOL_ID = "admin";
 var ENROLL_SECRET = "adminpw";
 var MEMBER_NAME = "member1";
+
 
 
 //Reload the new args : Channel name
@@ -68,37 +72,48 @@ var queryChaincodeRequest = {
 
 var createChannelRequest = {
     chanName: CHANNEL_NAME,
-    org: "",
     isFromFile: true,
     org: ORG
-}
+};
+
+var createChannelRequest_2 = {
+    chanName: CHANNEL_NAME,
+    isFromFile: false,
+    org: ORG,
+    createOptions:{
+        orgs:[{id:"Org1MSP"}],
+        mspDirs:{
+            "Org1MSP":path.join(artifact_path,"/crypto-config/peerOrganizations/org1.example.com/msp")
+        }
+    }
+};
 
 var joinChannelRequest = {
     chanName: CHANNEL_NAME,
     peers: [],
     isAddToFile: false,
     org: ORG
-}
+};
 
 var queryChannelRequest = {
     chanName: CHANNEL_NAME,
     peer: PEER,
     txid: "",
     org: ORG
-}
+};
 
 var queryChaincodeInfoRequest = {
     chanName: CHANNEL_NAME,
     peer: PEER,
     chainId: CHAINCODE_ID,
     org: ORG
-}
+};
 
 var enrollReq = {
     enrollmentId: ENROOL_ID,
     enrollmentSecret: ENROLL_SECRET,
     org: ORG
-}
+};
 
 var updateAppRequest = {
     chanName: CHANNEL_NAME,
@@ -109,7 +124,7 @@ var updateAppRequest = {
         target: PEER,
         mspDir: "../net/org3-artifacts/crypto-config/peerOrganizations/org3.example.com/msp"
     }
-}
+};
 
 var updateSysRequest = {
     chanName: CHANNEL_NAME,
@@ -120,19 +135,19 @@ var updateSysRequest = {
         target: PEER,
         mspDir: "../net/org3-artifacts/crypto-config/peerOrganizations/org3.example.com/msp"
     }
-}
+};
 
 var getConfigAppReq = {
     chanName: CHANNEL_NAME,
     org: ORG,
     target: PEER
-}
+};
 
 var getConfigSysReq = {
     chanName: CHANNEL_NAME,
     org: "ordererOrg",
     target: PEER
-}
+};
 
 function testWorkFlow() {
     try {
@@ -249,6 +264,24 @@ switch (program.method) {
             helper.initNetworkConfig().then(result => {
                 // Create channel with the related channel tx binary file
                 return api.createChannel(createChannelRequest);
+            }).then(result => {
+                console.log(result);
+                process.exit();
+            }).catch(err => {
+                console.error(err);
+                return;
+            });
+        } catch (e) {
+            console.log(e);
+            return;
+        }
+        break;
+    case "createChannel_2":
+        try {
+            //Do nothing
+            helper.initNetworkConfig().then(result => {
+                // Create channel with the related channel tx binary file
+                return api.createChannel(createChannelRequest_2);
             }).then(result => {
                 console.log(result);
                 process.exit();
