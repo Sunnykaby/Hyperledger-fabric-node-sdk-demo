@@ -6,6 +6,10 @@ var Configtxlator = require('./tools/fabric-tools/configtxlator');
 //Instantiate the configlator
 var configtx = new Configtxlator();
 
+/**
+ * Consider that, the different between the app and sys channel options are the msp( the sign identity, specially).
+ * But for show the difference clear, we make them as two functions.
+ */
 
 /**
  * Get Application channel config block from the target node of target channel
@@ -25,7 +29,9 @@ var getChannelConfigApp = function (channelName, org, target) {
 		// have the clients build a channel with all peers and orderers
 		channel = client.getChannel(channelName);
 
-		return channel.getChannelConfig(target);//Get channel config from orderer?
+		return channel.getChannelConfig(target);//Get channel config from peer
+		// Or, we can get the target channel config block from orderer
+		// return channel.getChannelConfigFromOrderer();//Get channel config from orderer
 	}).then((configEnvelope) => {
 		originalConfigBlock = configEnvelope.config.toBuffer();
 		//Get the readable json format data for config info

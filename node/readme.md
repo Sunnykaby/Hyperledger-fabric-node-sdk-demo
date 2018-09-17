@@ -122,4 +122,7 @@ IMAGE_TAG=1.2.0 docker-compose -f docker-compose-org3.yaml up -d
 
 * Run the update-channel test to add a target org
 
+### Use orderer admin as client userContext(sign identity) with connection-profile
+Under some conditions, we should use orderer's admin sign identity to sign the proposal or the envelope block. The normal connection-profile doesn't give us a guide to do something like this. So, I try to make up some workround config info for orderer, treating it like a normal organisation. Adding related orderer's user info into the connection-profile. Fortunately, it works. so, I just push the related code into the project.
+See the detail info in the dir : `demo\artifacts\connection-profile\network-tmpl.yaml` and `demo\artifacts\connection-profile\ordererOrg.yaml`.
 

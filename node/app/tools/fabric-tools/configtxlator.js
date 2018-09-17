@@ -102,6 +102,13 @@ var Configtxlator = class {
           });
 
     }
+
+    error_handler(err){
+        if (err.statusCode != 200){
+            logger.error("The error StatusCodeError is %s, error is %s", err.statusCode, err.error.toString());
+            // return new Error("The error StatusCodeError is %s, error is %s", err.statusCode, err.error.toString());
+        }
+    }
 };
 
 module.exports = Configtxlator;

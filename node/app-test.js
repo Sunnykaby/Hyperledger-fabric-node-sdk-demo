@@ -100,9 +100,20 @@ var enrollReq = {
     org: ORG
 }
 
-var updateRequest = {
+var updateAppRequest = {
     chanName: CHANNEL_NAME,
     org: ORG,
+    uptOpt: {
+        orgName: "Org3MSP",
+        mspId: "Org3MSP",
+        target: PEER,
+        mspDir: "../net/org3-artifacts/crypto-config/peerOrganizations/org3.example.com/msp"
+    }
+}
+
+var updateSysRequest = {
+    chanName: CHANNEL_NAME,
+    org: "ordererOrg",
     uptOpt: {
         orgName: "Org3MSP",
         mspId: "Org3MSP",
@@ -172,9 +183,9 @@ function testWorkFlow() {
         }).then(result => {
             console.log(result);
             // update channel as update options
-        //     return api.updateChannel(updateRequest);
-        // }).then( result => {
-        //     console.log(result);
+            return api.updateAppChannel(updateAppRequest);
+        }).then( result => {
+            console.log(result);
             // Set the usercontext to member
             return helper.setMember(ORG, MEMBER_NAME, ENROOL_ID, ENROLL_SECRET);
         }).then(member => {
@@ -378,12 +389,30 @@ switch (program.method) {
             return;
         }
         break;
-    case "updateChannel":
+    case "updateAppChannel":
         try {
             //Do nothing
             helper.initNetworkConfig().then(result => {
                 //Update the target channel info 
-                return api.updateChannel(updateRequest);
+                return api.updateAppChannel(updateAppRequest);
+            }).then(result => {
+                console.log(result);
+                process.exit();
+            }).catch(err => {
+                console.error(err);
+                return;
+            });
+        } catch (e) {
+            console.log(e);
+            return;
+        }
+        break;
+    case "updateSysChannel":
+        try {
+            //Do nothing
+            helper.initNetworkConfig().then(result => {
+                //Update the target channel info 
+                return api.updateSysChannel(updateSysRequest);
             }).then(result => {
                 console.log(result);
                 process.exit();

@@ -19,8 +19,12 @@ module.exports.createChannel = function (createChReq) {
     return createChannel.createChannel(createChReq.chanName, createChReq.org, createChReq.isFromFile);
 }
 
-module.exports.updateChannel = function (updateReq) {
-    return updateChannel.updateChannel(updateReq.chanName, updateReq.org, updateReq.uptOpt);
+module.exports.updateAppChannel = function (updateReq) {
+    return updateChannel.updateAppChannel(updateReq.chanName, updateReq.org, updateReq.uptOpt);
+}
+
+module.exports.updateSysChannel = function (updateReq) {
+    return updateChannel.updateSysChannel(updateReq.org, updateReq.uptOpt);
 }
 
 module.exports.getAppChannelConfig = function (getConfigReq){

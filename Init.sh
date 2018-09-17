@@ -12,6 +12,7 @@ function printHelp() {
 	echo "      - 'local' - Start the native fabric network from the local config file and crypto files"
 	echo "      - 'link' - Start the native fabric network from the remote config file and crypto files"
 	echo "      - 'clean' - rm the unuseless dir and files"
+	echo "      - 'refresh' - sync the newest node code into the workspace"
 	echo
 }
 
@@ -34,6 +35,10 @@ function do_clean() {
 	rm -rf demo 
 }
 
+function do_refresh() {
+	cp -rf node/* demo/node/
+}
+
 MODE=$1
 
 if [ "$MODE" == "local" ]; then
@@ -42,6 +47,8 @@ elif [ "$MODE" == "remote" ]; then
 	do_remote
 elif [ "$MODE" == "clean" ]; then
 	do_clean
+elif [ "$MODE" == "refresh" ]; then
+	do_refresh
 else
 	printHelp
 	exit 1
