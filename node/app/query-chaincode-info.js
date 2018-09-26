@@ -85,10 +85,9 @@ var queryChaincodeInfo = function (channelName, peer, chaincodeName, org) {
 	// 		chaincodePath: result.chaincode_spec.chaincode_id.path,
 	// 		chaincodeId: result.chaincode_spec.chaincode_id.name,
 	// 		chaincodeVersion: result.chaincode_spec.chaincode_id.version,
-	// 		chaincodePackage: '',
 	// 		chaincodeType: "golang",
 	// 		txId: tx_id,
-	// 		pkg: result.code_package.buffer.data
+	// 		chaincodePackage: result.code_package.buffer.data
 	// 	};
 	// 	return client.installChaincode(request);
 	// }, (err) => {
