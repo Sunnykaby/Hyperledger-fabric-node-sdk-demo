@@ -13,6 +13,9 @@ var caEnroll = function (enrollmentID, enrollmentSecret, org) {
 	var member1 = "member1";
 	var member2 = "member2";
 
+	// Notice that, we also can use client.setUserContext({userName, pwd}) to 
+	// set a memeber user with admin identity. See detail code in the fabric-client/libs/Client.js - _setUserFromConfig(opts)
+
 	return helper.getClient(org).then(_client => {
 		client = _client;
 		return ca.getAdminUser(client, enrollmentID, enrollmentSecret);
